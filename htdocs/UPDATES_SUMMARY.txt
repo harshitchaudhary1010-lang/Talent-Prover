@@ -1,0 +1,263 @@
+================================================================================
+  TALENTPROVE - UPDATES SUMMARY
+================================================================================
+Date: June 9, 2026
+
+TWO MAJOR UPDATES COMPLETED:
+================================================================================
+
+1. PASSWORD CHANGES
+2. EXPIRED TASK BLOCKING
+
+================================================================================
+UPDATE 1: PASSWORD CHANGES
+================================================================================
+
+ACCOUNT: nasa@gmail.com
+- Old Password: [previous password]
+- New Password: 12345678
+- Status: ✓ UPDATED SUCCESSFULLY
+- Role: Company
+
+ACCOUNT: apple@gmail.com
+- Status: ✗ USER NOT FOUND
+- Note: This email does not exist in the database
+
+HOW TO LOGIN:
+-------------
+1. Go to: http://localhost/auth/login.php
+2. Email: nasa@gmail.com
+3. Password: 12345678
+4. You will be logged in as a company account
+
+TO SEE ALL USERS:
+-----------------
+Visit: http://localhost/list_users.php
+This will show all users in your database with their roles and emails.
+
+================================================================================
+UPDATE 2: EXPIRED TASK BLOCKING FOR STUDENTS
+================================================================================
+
+WHAT WAS CHANGED:
+-----------------
+Students can NO LONGER access or submit to expired tasks.
+
+HOW IT WORKS:
+-------------
+1. When a task has a deadline that has passed (deadline < today)
+2. The task will NOT appear in the student's task list
+3. If a student tries to access an expired task directly (via URL)
+4. They will see an "Task Expired" message with the expiration date
+5. They CANNOT submit work to expired tasks
+
+WHERE CHANGES WERE MADE:
+------------------------
+
+✓ Dashboard/task.php
+  - Added expiration check when viewing individual tasks
+  - Shows "Task Expired" message with date if deadline has passed
+  - Blocks submission form for expired tasks
+
+✓ api/tasks.php
+  - Updated task list API for students
+  - Filters out expired tasks: AND (t.deadline IS NULL OR t.deadline >= CURDATE())
+  - Company and admin can still see all tasks
+
+✓ index.php
+  - Homepage task listing now excludes expired tasks
+  - Only shows active, non-expired tasks to visitors
+
+✓ tasks.php
+  - Public task browsing page filters expired tasks
+  - Statistics only count non-expired tasks
+
+✓ api/ai_match.php
+  - AI skill matching only considers non-expired tasks
+  - No matches will be shown for expired tasks
+
+VISUAL INDICATORS:
+------------------
+When a student tries to access an expired task, they see:
+
+┌─────────────────────────────────────────┐
+│  🗓️  Task Expired                        │
+│                                          │
+│  This task expired on [Date]            │
+│  This task is no longer accepting        │
+│  submissions.                            │
+│                                          │
+│  [🔍 Browse Active Tasks]                │
+└─────────────────────────────────────────┘
+
+EXAMPLES OF EXPIRED TASK BEHAVIOR:
+===================================
+
+Scenario 1: Task with deadline 2025-12-31 (past date)
+- Student: CANNOT see in task list
+- Student: CANNOT access task details
+- Student: CANNOT submit work
+- Company: CAN still see and manage
+- Admin: CAN still see and manage
+
+Scenario 2: Task with deadline 2026-12-31 (future date)
+- Student: CAN see in task list
+- Student: CAN access task details  
+- Student: CAN submit work
+- Everyone: Normal access
+
+Scenario 3: Task with NO deadline (NULL)
+- Student: CAN see in task list
+- Student: CAN access task details
+- Student: CAN submit work
+- Task never expires
+
+TESTING THE EXPIRED TASK FEATURE:
+==================================
+
+Test 1: Create a task with past deadline
+-----------------------------------------
+1. Login as company: nasa@gmail.com / 12345678
+2. Create a new task
+3. Set deadline to yesterday's date (e.g., June 8, 2026)
+4. Save the task
+5. Logout and login as a student
+6. Try to find the task - IT SHOULD NOT APPEAR
+7. Try to access it directly via URL - YOU SHOULD SEE "EXPIRED" MESSAGE
+
+Test 2: Create a task with future deadline
+-------------------------------------------
+1. Login as company: nasa@gmail.com / 12345678
+2. Create a new task
+3. Set deadline to tomorrow's date (e.g., June 10, 2026)
+4. Save the task
+5. Logout and login as a student
+6. Task SHOULD appear in task list
+7. You SHOULD be able to submit work
+
+Test 3: Create a task with no deadline
+---------------------------------------
+1. Login as company: nasa@gmail.com / 12345678
+2. Create a new task
+3. Leave deadline empty
+4. Save the task
+5. Logout and login as a student
+6. Task SHOULD appear in task list
+7. Task will NEVER expire
+
+SQL QUERIES USED FOR FILTERING:
+================================
+
+For students only:
+------------------
+WHERE t.status = 'active' 
+AND (t.deadline IS NULL OR t.deadline >= CURDATE())
+
+This means:
+- Include tasks with no deadline (NULL)
+- Include tasks where deadline is today or in the future
+- Exclude tasks where deadline is in the past
+
+For companies and admins:
+-------------------------
+No filtering - they can see all tasks regardless of expiration
+
+FILES MODIFIED:
+===============
+
+1. Dashboard/task.php
+   - Added $isExpired check
+   - Added expired task UI message
+   - Blocked submission form for expired tasks
+
+2. api/tasks.php
+   - Modified 'list' action
+   - Added deadline filter for students
+
+3. index.php
+   - Modified homepageTasks() function
+   - Added deadline filter
+
+4. tasks.php
+   - Modified public task listing query
+   - Added deadline filter in two places
+
+5. api/ai_match.php
+   - Modified task fetching query
+   - Added deadline filter
+
+NEW FILES CREATED:
+==================
+
+1. change_passwords.php
+   - Script to change passwords
+   - Can be accessed at: http://localhost/change_passwords.php
+
+2. list_users.php
+   - Shows all users in database
+   - Can be accessed at: http://localhost/list_users.php
+
+3. UPDATES_SUMMARY.txt
+   - This file
+
+IMPORTANT NOTES:
+================
+
+✓ Expired tasks are NOT deleted, just hidden from students
+✓ Companies can still see and manage expired tasks
+✓ Students who already submitted to a task can still see their submission
+✓ The check uses server date (today's date)
+✓ Deadline comparison: deadline >= CURDATE() (today or future is OK)
+
+VERIFICATION CHECKLIST:
+=======================
+
+☐ nasa@gmail.com can login with password 12345678
+☐ Student cannot see expired tasks in task list
+☐ Student cannot access expired task details
+☐ Student sees "Task Expired" message when trying to access
+☐ Student can still see non-expired tasks
+☐ Company can still see all tasks including expired ones
+☐ Homepage doesn't show expired tasks
+
+DEMO ACCOUNTS:
+==============
+
+After checking list_users.php, you may find:
+
+Admin:
+- Email: admin@gmail.com
+- Password: password (default from database.sql)
+
+Demo Student:
+- Email: student@demo.com  
+- Password: password (default from database.sql)
+
+NASA Company:
+- Email: nasa@gmail.com
+- Password: 12345678 (UPDATED)
+
+QUICK ACCESS LINKS:
+===================
+
+Change Passwords:     http://localhost/change_passwords.php
+List All Users:       http://localhost/list_users.php
+Login:                http://localhost/auth/login.php
+Register:             http://localhost/auth/register.php
+System Check:         http://localhost/check.php
+Debug Login:          http://localhost/debug_login.php
+
+SUMMARY:
+========
+
+✓ Password for nasa@gmail.com changed to 12345678
+✗ apple@gmail.com not found (doesn't exist)
+✓ Expired tasks are now blocked for students in 5 different places
+✓ Students see clear "Task Expired" message
+✓ Companies and admins can still manage expired tasks
+✓ All task lists now filter by deadline for students
+
+================================================================================
+Updates completed successfully!
+TalentProve - Task-Based Hiring Platform
+================================================================================

@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run PHP Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "php -S 127.0.0.1:8000",
+      "cwd": "${workspaceFolder}",
+      "serverReadyAction": {
+        "pattern": "Development Server \\(http://127\\.0\\.0\\.1:8000\\) started",
+        "uriFormat": "http://127.0.0.1:8000",
+        "action": "openExternally"
+      }
+    }
+  ]
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Industry Dropdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1a202c;
+            margin-bottom: 10px;
+        }
+        .section {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .result {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        select.form-input {
+            cursor: pointer;
+            appearance: none;
+            padding-right: 40px;
+            background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        #customIndustryWrapper {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏭 Industry Dropdown Test</h1>
+        <p style="color: #718096; margin-bottom: 30px;">Test the new industry dropdown with custom "Other" option</p>
+
+        <div class="section">
+            <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 15px;">Select Your Industry:</h2>
+            
+            <form id="testForm">
+                <div class="form-group">
+                    <label class="form-label">Industry</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-industry input-icon"></i>
+                        <select name="industry_select" id="industrySelect" class="form-input" onchange="handleIndustryChange()">
+                            <option value="">Select industry...</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Other">Other (Specify)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="customIndustryWrapper">
+                    <label class="form-label">Specify Industry</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-building-columns input-icon"></i>
+                        <input type="text" name="industry_custom" id="industryCustom" class="form-input" placeholder="E.g., Education, Manufacturing, Retail...">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary w-full mt-4">
+                    <i class="fa-solid fa-check"></i> Test Selection
+                </button>
+            </form>
+        </div>
+
+        <div class="result" id="result" style="display: none;">
+            <h3 style="font-weight: 700; margin-bottom: 10px;">Result:</h3>
+            <p id="resultText"></p>
+        </div>
+
+        <div class="section">
+            <h3 style="font-weight: 700; margin-bottom: 10px;">How it works:</h3>
+            <ol style="margin-left: 20px; line-height: 1.8;">
+                <li>Select from dropdown: <strong>Technology</strong>, <strong>Finance</strong>, <strong>Healthcare</strong></li>
+                <li>Or select <strong>"Other"</strong> to specify custom industry</li>
+                <li>When "Other" is selected, a text field appears</li>
+                <li>First letter of custom industry is automatically capitalized</li>
+                <li>Examples: education → <strong>Education</strong>, retail → <strong>Retail</strong></li>
+            </ol>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+            <a href="/auth/register.php?role=company" style="color: #667eea; font-weight: 600; text-decoration: none;">
+                → Go to Company Registration
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function handleIndustryChange() {
+            const select = document.getElementById('industrySelect');
+            const customWrapper = document.getElementById('customIndustryWrapper');
+            const customInput = document.getElementById('industryCustom');
+            
+            if (select.value === 'Other') {
+                customWrapper.style.display = 'block';
+                customInput.required = true;
+                customInput.focus();
+            } else {
+                customWrapper.style.display = 'none';
+                customInput.required = false;
+                customInput.value = '';
+            }
+        }
+
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const select = document.getElementById('industrySelect');
+            const customInput = document.getElementById('industryCustom');
+            const result = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            
+            let finalIndustry = '';
+            
+            if (select.value === 'Other') {
+                if (!customInput.value.trim()) {
+                    alert('Please specify your industry!');
+                    customInput.focus();
+                    return;
+                }
+                // Capitalize first letter
+                const custom = customInput.value.trim();
+                finalIndustry = custom.charAt(0).toUpperCase() + custom.slice(1);
+            } else {
+                finalIndustry = select.value;
+            }
+            
+            if (!finalIndustry) {
+                alert('Please select an industry!');
+                return;
+            }
+            
+            result.style.display = 'block';
+            resultText.innerHTML = `
+                <strong>Selected Industry:</strong> <code style="background: #fff; padding: 4px 8px; border-radius: 4px; color: #667eea; font-weight: 700;">${finalIndustry}</code><br><br>
+                ${select.value === 'Other' ? 
+                    `<small>✓ Custom industry entered: "${customInput.value}" → Capitalized to "${finalIndustry}"</small>` : 
+                    `<small>✓ Pre-defined industry selected</small>`
+                }
+            `;
+            
+            // Scroll to result
+            result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        // Auto-capitalize as user types in custom field
+        document.getElementById('industryCustom').addEventListener('input', function() {
+            if (this.value.length === 1) {
+                this.value = this.value.toUpperCase();
+            }
+        });
+    </script>
+</body>
+</html>
